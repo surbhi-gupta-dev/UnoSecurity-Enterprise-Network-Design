@@ -1,0 +1,192 @@
+!CONFIGURATION FOR R1 ROUTER
+
+!Management Configuration
+
+enable
+configure terminal
+hostname SG-R1
+enable secret cisco123
+
+!Interface configuration
+
+interface Eth 1/0
+ip address 172.16.0.1 255.255.255.0 
+description Link to HR-Network
+no shutdown
+exit
+
+interface Eth 1/1
+ip address 172.16.1.1 255.255.255.0 
+description Link to Acc-Network
+no shutdown
+exit
+
+interface Fa0/1
+ip address 172.16.255.1 255.255.255.252 
+description Link to Router 2 (R2)
+no shutdown
+exit
+
+interface Fa0/0
+ip address 172.16.255.5 255.255.255.252 
+description Link to Edge Router (R3)
+no shutdown
+exit
+
+!DHCP Configuration
+ip dhcp pool HR-Pool
+network 172.16.0.0 255.255.255.0 
+default-router 172.16.0.1
+ip dhcp excluded-address 172.16.0.1 172.16.0.5
+
+ip dhcp pool Acc-Pool
+network 172.16.1.0 255.255.255.0 
+default-router 172.16.1.1
+ip dhcp excluded-address 172.16.1.1 172.16.1.5
+
+!Configuring Dynamic Routing
+router rip
+version 2
+network 172.16.0.1
+network 172.16.1.1
+network 172.16.255.0
+network 172.16.255.4
+no auto-summary
+exit
+
+
+
+
+
+!CONFIGURATION FOR R2 ROUTER
+
+!Management Configuration
+
+enable
+configure terminal
+hostname SG-R2
+enable secret cisco123
+
+!Interface configuration
+
+interface Eth 1/0
+ip address 172.16.2.1 255.255.255.224 
+description Link to IT-Network
+no shutdown
+exit
+
+interface Eth 1/1
+ip address 172.16.2.33 255.255.255.224 
+description Link to Guest-Network
+no shutdown
+exit
+
+interface Fa0/0
+ip address 172.16.255.2 255.255.255.252 
+description Link to Router 1 (R1)
+no shutdown
+exit
+
+interface Fa0/1
+ip address 172.16.255.9 255.255.255.252 
+description Link to Edge Router (R3)
+no shutdown
+exit
+
+!DHCP Configuration
+ip dhcp pool IT-Pool
+network 172.16.2.0 255.255.255.224 
+default-router 172.16.2.1
+ip dhcp excluded-address 172.16.2.1 172.16.2.5
+
+ip dhcp pool Guest-Pool
+network 172.16.2.32 255.255.255.224 
+default-router 172.16.2.33
+ip dhcp excluded-address 172.16.2.33 172.16.2.37
+
+!Configuring Dynamic Routing
+router rip
+version 2
+network 172.16.2.1
+network 172.16.2.32
+network 172.16.255.0
+network 172.16.255.8
+no auto-summary
+exit
+
+
+
+
+
+!CONFIGURATION FOR R3 EDGE ROUTER
+
+!Management Configuration
+
+enable
+configure terminal
+hostname SG-R3
+enable secret cisco123
+
+!Interface configuration
+
+interface Fa0/0
+ip address 172.16.255.6 255.255.255.252 
+description Link to Router 1 (R1)
+no shutdown
+exit
+
+interface Fa0/1
+ip address 172.16.255.10 255.255.255.252 
+description Link to Router 2 (R2)
+no shutdown
+exit
+
+interface Se0/2/0
+ip address 142.100.0.14 255.255.255.252 
+description Link to ISP Router
+no shutdown
+exit
+
+!Configuring Dynamic Routing
+router rip
+version 2
+network 172.16.255.4
+network 172.16.255.8
+network 142.100.0.12
+no auto-summary
+exit
+
+!Setting up default route
+ip route 0.0.0.0 0.0.0.0 142.100.0.13
+
+!Setting up default-router for all other routers in LAN
+router rip 
+version 2
+default-information originate
+exit
+
+
+
+
+
+
+!CONFIGURATION FOR ISP ROUTER
+
+!Management Configuration
+
+enable
+configure terminal
+hostname SG-R4
+enable secret cisco123
+
+!Interface configuration
+
+
+interface Se0/0/0
+ip address 142.100.0.13 255.255.255.252 
+description Link to Edge Router (R3)
+no shutdown
+exit
+
+!Setting up default route
+ip route 0.0.0.0 0.0.0.0 142.100.0.14
